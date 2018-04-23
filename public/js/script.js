@@ -26,6 +26,17 @@
 	}
 	clone(Circle, Rect);
 
+	function selfDestructDecorator(obj) {
+
+		obj.item.click(function() {
+			obj.kill();
+		});
+
+		obj.kill = function() {
+			this.item.remove();
+		};
+	}
+
 	function RedCircleBuilder() {
 		this.item = new Circle();
 		this.init();
@@ -47,8 +58,9 @@
 	BlueCircleBuilder.prototype.init = function () {
 		this.item.tint('blue');
 		let rect = new Rect();
-		rect.tint('yellow');
-		rect.move(40, 40);
+			rect.tint('yellow');
+			rect.move(40, 40);
+			selfDestructDecorator(rect);
 
 		this.item.get().append(rect.get());
 	};
