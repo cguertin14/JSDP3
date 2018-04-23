@@ -34,18 +34,18 @@
 	}
 	clone(Circle, Rect);
 
+	function binder(scope, fn) {
+		return function() {
+			return fn.apply(scope,arguments);
+		};
+	}
+
 	function shapeFacade(shp) {
 		return {
-			tint(clr) {
-				shp.tint(clr);
-			},
-			move(x,y) {
-				shp.move(x, y);
-			},
-			getID() { return shp.getID(); },
-			setID(id) { 
-				shp.setID(id);
-			},
+			tint:  binder(shp, shp.tint),
+			move:  binder(shp, shp.move),
+			getID: binder(shp, shp.getID),
+			setID: binder(shp, shp.setID)
 		};
 	}
 
