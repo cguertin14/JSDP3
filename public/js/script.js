@@ -57,7 +57,7 @@
 		return this.item;
 	};
 
-	function CircleFactory() {
+	function ShapeFactory() {
 		this.types = {};
 		this.create = (type) => {
 			return new this.types[type]().get();
@@ -67,27 +67,71 @@
 				this.types[type] = cls;
 			}
 		};
+	}
+
+	
+	function StageAdapter(id){
+		this.index = 0;
+		this.context = $(id);
+		this.SIG = 'stageItem_';
+	}
+
+	StageAdapter.prototype.add = function (item){
+		++this.index;
+		item.addClass(this.SIG + this.index);
+		this.context.append(item);
 	};
+
+	StageAdapter.prototype.remove = function(index){
+		this.context.remove('.' + this.SIG + index);
+	}
+
+	function CompositeController(a) {
+		this.a = a;
+	}
+
+	CompositeController.prototype.action = function(act) {
+		let args = Array.from(arguments);
+			args.shift();
+		for (let item in this.a) {
+			this.a[item][act].apply(this.a[item], args);
+		}
+	};
+
 
 	const CircleGeneratorSingleton = (() => {
 		let instance;
 
 		const init = () => {
 			let _aCircle = [],
-				_stage = $('.advert'),
-				_cf = new CircleFactory();
-			_cf.register('red', RedCircleBuilder);
-			_cf.register('blue', BlueCircleBuilder);
+				_stage,
+				_sf = new ShapeFactory(),
+				_cc = new CompositeController(_aCircle);
 
 			const _position = (circle, left, top) => {
-				circle.css('left', left);
-				circle.css('top', top);
+				circle.move(left,top);
+			};
+
+			const registerShape = (name, cls) => {
+				_sf.register(name, cls);
+			};
+
+			const setStage = (stg) => {
+				_stage = stg.context;
 			};
 
 			const create = (left, top, type) => {
-				var circle = _cf.create(type).get();
-				_position(circle, left, top);
+				var circle = _sf.create(type);
+				circle.move(left, top);
 				return circle;
+			};
+
+			const tint = (clr) => {
+				_cc.action('tint',clr);
+			};
+
+			const move = (left, top) => {
+				_cc.action('move', left, top);
 			};
 
 			const add = (circle) => {
@@ -99,7 +143,7 @@
 				return _aCircle.length;
 			};
 
-			return { index, create, add };
+			return { index, create, add , register: registerShape, setStage, tint, move };
 		};
 
 		return {
@@ -114,18 +158,27 @@
 	})();
 
 	$(win.document).ready(function () {
+
+		var cg = CircleGeneratorSingleton.getInstance();
+		cg.register('red', RedCircleBuilder);
+		cg.register('blue', BlueCircleBuilder);
+		cg.setStage(new StageAdapter('.advert'));
+
 		$('.advert').click(function (e) {
-			let cg = CircleGeneratorSingleton.getInstance();
 			let circle = cg.create(e.pageX - 25, e.pageY - 25, 'red');
 			cg.add(circle);
 		});
 
-		$(document).keypress(function (e) {
+		$(document).keydown(function (e) {
 			if (e.key === 'a') {
-				var cg = CircleGeneratorSingleton.getInstance();
 				var circle = cg.create(Math.floor(Math.random() * 600), Math.floor(Math.random() * 600), "blue");
-
 				cg.add(circle);
+			} else if (e.key === 't') {
+				cg.tint('black');
+			} else if (e.key === 'ArrowRight') {
+				cg.move('+=5px','+=0px');
+			} else if (e.key === 'ArrowLeft') {
+				cg.move('-=5px','+=0px');
 			}
 		});
 	});
