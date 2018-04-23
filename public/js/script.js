@@ -21,10 +21,33 @@
 		return this.item;
 	};
 
+	Circle.prototype.getID = function() {
+		return this.id;
+	};
+
+	Circle.prototype.setID = function(id) {
+		this.id = id;
+	};
+
 	function Rect() {
 		this.item = $('<div class="rect"></div>');
 	}
 	clone(Circle, Rect);
+
+	function shapeFacade(shp) {
+		return {
+			tint(clr) {
+				shp.tint(clr);
+			},
+			move(x,y) {
+				shp.move(x, y);
+			},
+			getID() { return shp.getID(); },
+			setID(id) { 
+				shp.setID(id);
+			},
+		};
+	}
 
 	function selfDestructDecorator(obj) {
 
@@ -141,7 +164,9 @@
 			const create = (left, top, type) => {
 				var circle = _sf.create(type);
 				circle.move(left, top);
-				return circle;
+				circle.setID(_aCircle.length);
+				_aCircle.push(circle);
+				return shapeFacade(circle);
 			};
 
 			const tint = (clr) => {
@@ -153,8 +178,7 @@
 			};
 
 			const add = (circle) => {
-				_stage.append(circle.get());
-				_aCircle.push(circle);
+				_stage.append(_aCircle[circle.getID()].get());
 			};
 
 			const index = () => {
