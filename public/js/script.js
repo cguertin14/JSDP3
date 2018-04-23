@@ -110,6 +110,12 @@
 		}
 	};
 
+	const flyWeightFader = function(item) {
+		if (item.hasClass('circle')) {
+			item.fadeTo(.5, item.css('opacity')*.5);
+		}
+	};
+
 
 	const CircleGeneratorSingleton = (() => {
 		let instance;
@@ -179,6 +185,8 @@
 		$('.advert').click(function (e) {
 			let circle = cg.create(e.pageX - 25, e.pageY - 25, 'red');
 			cg.add(circle);
+
+			flyWeightFader($(e.target));
 		});
 
 		$(document).keydown(function (e) {
